@@ -4,14 +4,30 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: username
+        # just for now use in memory users
+        temp_backend_users:
+            memory:
+                users:
+                    rokas_admin: { password: '$2y$13$Mm/oi97UTlzBcreI8x52TeUl8xlpmNvFn8qZ7xWC9kpXGDKB.mNFC', roles: ['ROLE_ADMIN'] }
+                    deima_admin: { password: '$2y$13$Mm/oi97UTlzBcreI8x52TeUl8xlpmNvFn8qZ7xWC9kpXGDKB.mNFC', roles: ['ROLE_ADMIN'] }
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            # just for now use in memory users
+            provider: temp_backend_users
+            http_basic:
+                realm: Secured Area
+
+            logout:
+                path: app_logout
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -22,6 +38,7 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/api, roles: ROLE_ADMIN }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 
